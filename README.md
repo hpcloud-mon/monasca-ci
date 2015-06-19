@@ -38,8 +38,9 @@ A Docker image with a customized Jenkins is available from the Docker registry a
 [here](https://github.com/hpcloud-mon/monasca-docker/tree/master/ci).
 
 ## Code structure
-- `jjb` Contains the (Jenkins Job Builder)[http://docs.openstack.org/infra/jenkins-job-builder/] job definitions.
-- `system` Contains the scripts used by Jenkins to build the Monasca system. Various configurations are supported and run by different Jenkins jobs.
+- `jjb` - Contains the (Jenkins Job Builder)[http://docs.openstack.org/infra/jenkins-job-builder/] job definitions.
+- `system` - Contains the scripts used by Jenkins to build the Monasca system. Various configurations are supported and run by different Jenkins jobs.
+- `tests` - Various test scripts. Some tests using larger frameworks such as Tempest are in different git repos and pulled in by Jenkins as needed.
 
 ## Todo
 - Can I watch gerrit patchsets and trigger builds based on them like I could for branches?
