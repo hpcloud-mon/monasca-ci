@@ -313,6 +313,12 @@ def debug_storm(node):
     else:
         return True
 
+def set_if_not_env(name, default):
+    if name not in os.environ:
+        os.environ[name] = default
+    elif default != os.environ[name]:
+        print('%s already set to %s' % (name, os.environ[name]))
+
 def setup_cli():
     # These need to be set because we are invoking the CLI as a process
     set_if_not_env('OS_USERNAME', OS_USERNAME)
