@@ -314,8 +314,6 @@ def debug_storm(node):
         return True
 
 def setup_cli():
-    api_host = get_api_host()
-
     # These need to be set because we are invoking the CLI as a process
     set_if_not_env('OS_USERNAME', OS_USERNAME)
     set_if_not_env('OS_PASSWORD', OS_PASSWORD)
