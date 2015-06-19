@@ -13,7 +13,6 @@ import smoke2_configs
 import socket
 import subprocess
 import sys
-import utils
 
 config = smoke2_configs.test_config
 args = 0
@@ -314,6 +313,18 @@ def debug_storm(node):
     else:
         return True
 
+def setup_cli():
+    api_host = get_api_host()
+
+    # These need to be set because we are invoking the CLI as a process
+    set_if_not_env('OS_USERNAME', OS_USERNAME)
+    set_if_not_env('OS_PASSWORD', OS_PASSWORD)
+    set_if_not_env('OS_PROJECT_NAME', OS_PROJECT_NAME)
+    set_if_not_env('OS_AUTH_URL', OS_AUTH_URL)
+    os.environ['http_proxy'] = ''
+    os.environ['https_proxy'] = ''
+    os.environ['HTTP_PROXY'] = ''
+    os.environ['HTTPS_PROXY'] = ''
 
 def stage_one(single=None, zoo=None, kafka=None):
 
@@ -419,7 +430,7 @@ def stage_three(single=None, mysql=None, dbtype=None, db=None):
 
 
 def main():
-    utils.setup_cli()
+    setup_cli()
 
     # parse the command line arguments
     global args
