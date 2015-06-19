@@ -49,16 +49,20 @@ test_config = {
         'user': "{{mon_mysql_users[1]['username']|default()}}",
         'pass': "{{mon_mysql_users[1]['password']|default()}}"
     },
+{% if vertica_users is defined %}
     'vertica': {
         'user': "{{vertica_users[1]['username']|default()}}",
         'pass': "{{vertica_users[1]['password']|default()}}",
         'node': "{{host_ip}}"
     },
+{% endif %}
+{% if mon_influxdb_users is defined %}
     'influx': {
         'user': "{{mon_influxdb_users[0]['username']|default()}}",
         'pass': "{{mon_influxdb_users[0]['password']|default()}}",
         'node': "{{influxdb_url|default()}}"
     },
+{% endif %}
     'help': {
         'test': 'wiki link for help with specific process'
     }
