@@ -313,22 +313,6 @@ def debug_storm(node):
     else:
         return True
 
-def set_if_not_env(name, default):
-    if name not in os.environ:
-        os.environ[name] = default
-    elif default != os.environ[name]:
-        print('%s already set to %s' % (name, os.environ[name]))
-
-def setup_cli():
-    # These need to be set because we are invoking the CLI as a process
-    set_if_not_env('OS_USERNAME', OS_USERNAME)
-    set_if_not_env('OS_PASSWORD', OS_PASSWORD)
-    set_if_not_env('OS_PROJECT_NAME', OS_PROJECT_NAME)
-    set_if_not_env('OS_AUTH_URL', OS_AUTH_URL)
-    os.environ['http_proxy'] = ''
-    os.environ['https_proxy'] = ''
-    os.environ['HTTP_PROXY'] = ''
-    os.environ['HTTPS_PROXY'] = ''
 
 def stage_one(single=None, zoo=None, kafka=None):
 
@@ -434,8 +418,6 @@ def stage_three(single=None, mysql=None, dbtype=None, db=None):
 
 
 def main():
-    setup_cli()
-
     # parse the command line arguments
     global args
     args = parse_commandline_args()
