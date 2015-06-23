@@ -12,6 +12,9 @@
     builders:
         - shell: pip install ansible-lint
         - shell: ansible-lint tasks/*.yml
+    publishers:
+        - send-email-notification
+
 
 - project:
     name: ansible-influxdb

@@ -17,3 +17,5 @@
       - timeout:
           timeout: 60
           fail: true
+    publishers:
+        - send-email-notification

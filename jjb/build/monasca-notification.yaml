@@ -29,3 +29,4 @@
               pattern: '**/pep8.txt'
         - archive:
             artifacts: 'dist/*.whl'
+        - send-email-notification

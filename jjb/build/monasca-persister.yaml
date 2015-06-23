@@ -3,17 +3,18 @@
     project-type: freestyle
     description: Build Monasca Persister
     scm:
-      - git:
-         url: https://github.com/stackforge/monasca-persister
-         name: origin
-         skip-tag: true
-         prune: true
-         clean:
-             before: true
-         wipe-workspace: true
+        - git:
+           url: https://github.com/stackforge/monasca-persister
+           name: origin
+           skip-tag: true
+           prune: true
+           clean:
+               before: true
+           wipe-workspace: true
     builders:
-      - maven-target:
-          goals: "clean package"
+        - maven-target:
+            goals: "clean package"
     publishers:
-      - archive:
-          artifacts: 'target/*-shaded.jar'
+        - archive:
+            artifacts: 'target/*-shaded.jar'
+        - send-email-notification
