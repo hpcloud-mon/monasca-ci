@@ -10,8 +10,7 @@
                 before: true
             wipe-workspace: true
     builders:
-        - shell: pip install ansible-lint
-        - shell: ansible-lint tasks/*.yml
+        - shell: ansible-lint -x templating tasks/*.yml
     publishers:
         - send-email-notification
 
