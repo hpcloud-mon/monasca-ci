@@ -1,0 +1,19 @@
+- job:
+    name: python-monascaclient
+    project-type: freestyle
+    description: Build the python-monascaclient
+    scm:
+        - git:
+            url: https://github.com/stackforge/python-monascaclient
+            name: origin
+            skip-tag: true
+            prune: true
+            clean:
+                before: true
+            wipe-workspace: true
+    builders:
+        - shell: python ./setup.py bdist_wheel
+    publishers:
+        - archive:
+            artifacts: 'dist/*.whl'
+        - send-email-notification
