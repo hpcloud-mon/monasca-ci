@@ -3,3 +3,10 @@
     publishers:
       - email:
          recipients: ci@localhost
+
+- builder:
+    name: copy-artifact
+    builders:
+      - copyartifact:
+          project: "{project_name}"
+          target: "artifacts/"

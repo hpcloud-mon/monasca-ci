@@ -14,6 +14,18 @@
     triggers:
       - pollscm: "*/5 * * * *"
     builders:
+        - copy-artifact:
+            project_name: monasca-agent
+        - copy-artifact:
+            project_name: monasca-api
+        - copy-artifact:
+            project_name: monasca-notification
+        - copy-artifact:
+            project_name: monasca-persister
+        - copy-artifact:
+            project_name: monasca-thresh
+        - copy-artifact:
+            project_name: python-monascaclient
         - shell: |
             #!/bin/bash
             cd system
