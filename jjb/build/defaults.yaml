@@ -19,3 +19,4 @@
             fail: true
     publishers:
         - send-email-notification
+        - Build_Monasca-Single-Node

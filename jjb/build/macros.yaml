@@ -3,3 +3,10 @@
     publishers:
       - email:
          recipients: ci@localhost
+
+- publisher:
+    name: Build_Monasca-Single-Node
+    publishers:
+      - trigger:
+          project: Monasca-Single-Node
+          threshold: SUCCESS

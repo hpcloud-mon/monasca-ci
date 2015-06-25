@@ -17,3 +17,4 @@
         - archive:
             artifacts: 'dist/*.whl'
         - send-email-notification
+        - Build_Monasca-Single-Node
