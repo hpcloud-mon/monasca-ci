@@ -7,15 +7,15 @@
     concurrent: true
     disabled: false
     logrotate:
-      daysToKeep: 180
-      numToKeep: 90
-      artifactDaysToKeep: -1
-      artifactNumToKeep: -1
+        daysToKeep: 180
+        numToKeep: 90
+        artifactDaysToKeep: -1
+        artifactNumToKeep: -1
     triggers:
-      - pollscm: "*/5 * * * *"
+        - pollscm: "*/5 * * * *"
     wrappers:
-      - timeout:
-          timeout: 60
-          fail: true
+        - timeout:
+            timeout: 60
+            fail: true
     publishers:
         - send-email-notification

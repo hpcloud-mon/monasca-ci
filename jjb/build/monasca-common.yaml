@@ -17,5 +17,3 @@
           artifact-id: monasca-common
         root-pom: java/pom.xml
         goals: "clean install"
-    publishers:
-        - send-email-notification

@@ -11,8 +11,6 @@
             wipe-workspace: true
     builders:
         - shell: ansible-lint -x templating tasks/*.yml
-    publishers:
-        - send-email-notification
 
 
 - project:
