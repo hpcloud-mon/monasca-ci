@@ -92,8 +92,7 @@ def check_port(node, port):
             print(successful + " Port {} is open".format(port))
         return False
     else:
-        if args.verbose:
-            print(error + " Port {} is not open".format(port))
+        print(error + " Port {} is not open".format(port))
         return True
 
 
@@ -277,6 +276,10 @@ def debug_rest_urls(node, token):
                       .format(node, version_id))
             else:
                 print(successful)
+        else:
+            print(error + ' unexpected response received: \n'
+                          '{}'.format(r.text))
+            return False
     except requests.ConnectionError:
         print(error + ' incorrect response from REST '
               'API on node {}'.format(node))
