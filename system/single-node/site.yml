@@ -20,6 +20,24 @@
         - libssl-dev
         - libcrypto++-dev
 
+- name: Copy artifacts to the container
+  hosts: monasca
+  sudo: yes
+  vars:
+    monasca_virtualenv_dir: /opt/monasca
+  tasks:
+    - file: path="{{monasca_virtualenv_dir}}" state=directory
+    - name: Copy the artifacts
+      copy: src=artifacts/ dest="{{monasca_virtualenv_dir}}"
+    - name: Install the python artifacts
+      pip: chdir="{{monasca_virtualenv_dir}}/dist" name='./*' state=latest virtualenv="{{monasca_virtualenv_dir}}"
+    - name: Link the Java projects
+      file: path="{{monasca_virtualenv_dir}}/{{item}}.jar" src="artifacts/target/{{item}}*.jar" state=link
+      with_items:
+        - monasca-api
+        - monasca-persister
+        - monasca-thresh
+
 - name: Setup Keystone users/endpoints, requires keystone admin url be exposed
   hosts: monasca
   sudo: yes
@@ -52,6 +70,7 @@
           - name: devstack
             host_name: 192.168.10.5
             alive_test: ssh
+    skip_install: True
   tasks:
     - name: Update cli
       pip: name=python-monascaclient state=latest virtualenv="{{monasca_virtualenv_dir}}"
@@ -73,7 +92,7 @@
        mysql_user: notification,
        mysql_password: password,
        tags: [notification]}
-    - {role: storm, storm_nimbus_enabled: true, storm_supervisor_enabled: true, tags: [storm]}
+    - {role: storm, storm_nimbus_enabled: true, storm_supervisor_enabled: true, skip_install: False, tags: [storm]}
     - {role: monasca-thresh,
        mysql_user: thresh,
        mysql_password: password,
