@@ -128,7 +128,7 @@
       template: src="../../tests/smoke/smoke2_configs.py.j2" dest="{{test_base}}/smoke2_configs.py"
 
     - name: Copy the smoke test to the box
-      copy: src="../../tests/smoke/smoke2.py" dest="{{test_base}}/smoke2.py"
+      copy: src="../../tests/smoke/" dest="{{test_base}}/"
 
     - name: Run the smoke2 test
       command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/smoke2.py"
