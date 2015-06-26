@@ -134,3 +134,8 @@
       command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/smoke2.py"
       register: smoke2
     - debug: var=smoke2.stdout_lines
+
+    - name: Run the smoke test
+      command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/smoke.py"
+      register: smoke
+    - debug: var=smoke.stdout_lines
