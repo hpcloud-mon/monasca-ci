@@ -19,6 +19,9 @@
         - python-dev
         - libssl-dev
         - libcrypto++-dev
+        - build-essential
+        - python-mysqldb
+        - libmysqlclient-dev
 
 - name: Copy artifacts to the container
   hosts: monasca
@@ -38,7 +41,7 @@
         - monasca_agent
         - monasca_notification
     - name: Link the Java projects
-      file: path="{{monasca_virtualenv_dir}}/{{item}}.jar" src="{{monasca_virtualenv_dir}}/target/{{item}}*.jar" state=link
+      shell: "ln -s {{monasca_virtualenv_dir}}/target/{{item}}*.jar {{monasca_virtualenv_dir}}/{{item}}.jar"
       with_items:
         - monasca-api
         - monasca-persister
