@@ -30,7 +30,7 @@
     - name: Copy the artifacts
       copy: src=../../artifacts/ dest="{{monasca_virtualenv_dir}}"
     - name: Install the python artifacts
-      pip: chdir="{{monasca_virtualenv_dir}}/dist" name='./*' state=latest virtualenv="{{monasca_virtualenv_dir}}"
+      shell: "{{monasca_virtualenv_dir}}/bin/pip install {{monasca_virtualenv_dir}}/dist/*"
     - name: Link the Java projects
       file: path="{{monasca_virtualenv_dir}}/{{item}}.jar" src="{{monasca_virtualenv_dir}}/target/{{item}}*.jar" state=link
       with_items:
