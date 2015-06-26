@@ -32,7 +32,7 @@
     - name: Setup the virtualenv
       command: "virtualenv {{monasca_virtualenv_dir}}"
     - name: Install the python artifacts
-      command: "{{monasca_virtualenv_dir}}/bin/pip install {{monasca_virtualenv_dir}}/dist/{{item}}*"
+      shell: "{{monasca_virtualenv_dir}}/bin/pip install {{monasca_virtualenv_dir}}/dist/{{item}}*"
       with_items:
         - python_monascaclient
         - monasca_agent
