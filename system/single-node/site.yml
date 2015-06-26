@@ -29,6 +29,8 @@
     - file: path="{{monasca_virtualenv_dir}}" state=directory
     - name: Copy the artifacts
       copy: src=../../artifacts/ dest="{{monasca_virtualenv_dir}}"
+    - name: Setup the virtualenv
+      command: "virtualenv {{monasca_virtualenv_dir}}"
     - name: Install the python artifacts
       shell: "{{monasca_virtualenv_dir}}/bin/pip install {{monasca_virtualenv_dir}}/dist/*"
     - name: Link the Java projects
@@ -71,11 +73,6 @@
             host_name: 192.168.10.5
             alive_test: ssh
     skip_install: True
-  tasks:
-    - name: Update cli
-      pip: name=python-monascaclient state=latest virtualenv="{{monasca_virtualenv_dir}}"
-      tags:
-        - cli
   roles:
     - {role: monasca-schema, tags: [schema]}
     - {role: monasca-api,
