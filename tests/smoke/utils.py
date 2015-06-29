@@ -100,6 +100,14 @@ def setup_cli():
     os.environ['HTTPS_PROXY'] = ''
 
 
+def ensure_has_notification_engine():
+    if not os.path.isfile('/etc/monasca/notification.yaml'):
+        print('Must be run on a VM with Notification Engine installed',
+              file=sys.stderr)
+        return False
+    return True
+
+
 def find_notifications(alarm_id, user):
     args = ['sudo', 'cat', '/var/mail/' + user]
     result = []
