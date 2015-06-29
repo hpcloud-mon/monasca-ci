@@ -137,5 +137,10 @@
 
     - name: Run the smoke test
       command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/smoke.py"
+      environment:
+        OS_USERNAME: "{{keystone_project_admin}}"
+        OS_PASSWORD: "{{keystone_project_admin_password}}"
+        OS_PROJECT_NAME: "{{keystone_project}}"
+        OS_AUTH_URL: "{{keystone_admin_url}}"
       register: smoke
     - debug: var=smoke.stdout_lines
