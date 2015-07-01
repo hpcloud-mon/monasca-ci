@@ -337,41 +337,7 @@ def stage_one(single=None, zoo=None, kafka=None):
     return 0
 
 
-def stage_two(single=None, monapi=None):
-    print('*****VERIFYING KEYSTONE*****')
-    key_user = config['keystone']['user']
-    key_pass = config['keystone']['pass']
-    key_host = config['keystone']['host']
-    if key_host:
-        auth_url = "http://" + key_host + ':35357/v3'
-        if key_user and key_pass:
-            try:
-                token = debug_keystone(key_user, key_pass, 'test', auth_url)
-            except Exception, e:
-                print(error + ' {}'.format(e))
-                print('*****TEST FAILED*****')
-                return 1
-        else:
-            print(error + ' Could not parse keystone user/pass')
-            return 1
-    else:
-        print(error + ' Could not parse keystone node')
-        return 1
-
-    if single:
-        debug_rest_urls(single, token)
-    elif monapi:
-        debug_rest_urls(monapi, token)
-    else:
-        print(error + ' Could not parse node for REST API')
-
-    storm_node = config['storm']
-    if storm_node:
-        debug_storm(storm_node)
-    else:
-        print(error + ' Could not parse storm node')
-
-def stage_three(single=None, mysql=None, dbtype=None, db=None):
+def stage_two(single=None, mysql=None, dbtype=None, db=None):
     mysql_user = config['mysql']['user']
     mysql_pass = config['mysql']['pass']
     if mysql_user and mysql_pass:
@@ -420,6 +386,41 @@ def stage_three(single=None, mysql=None, dbtype=None, db=None):
                 return 1
 
 
+def stage_three(single=None, monapi=None):
+    print('*****VERIFYING KEYSTONE*****')
+    key_user = config['keystone']['user']
+    key_pass = config['keystone']['pass']
+    key_host = config['keystone']['host']
+    if key_host:
+        auth_url = "http://" + key_host + ':35357/v3'
+        if key_user and key_pass:
+            try:
+                token = debug_keystone(key_user, key_pass, 'test', auth_url)
+            except Exception, e:
+                print(error + ' {}'.format(e))
+                print('*****TEST FAILED*****')
+                return 1
+        else:
+            print(error + ' Could not parse keystone user/pass')
+            return 1
+    else:
+        print(error + ' Could not parse keystone node')
+        return 1
+
+    if single:
+        debug_rest_urls(single, token)
+    elif monapi:
+        debug_rest_urls(monapi, token)
+    else:
+        print(error + ' Could not parse node for REST API')
+
+    storm_node = config['storm']
+    if storm_node:
+        debug_storm(storm_node)
+    else:
+        print(error + ' Could not parse storm node')
+
+
 def main():
     # parse the command line arguments
     global args
@@ -436,12 +437,12 @@ def main():
         return 1
 
     # Stage Two
-    # Will check keystone, REST API, and Storm
-    fail = stage_two(args.single, args.monapi)
+    # Will check MySQL and vertica/influxdb
+    fail = stage_two(args.single, args.mysql, args.dbtype, args.db)
 
     # Stage Three
-    # Will check MySQL and vertica/influxdb
-    fail = stage_three(args.single, args.mysql, args.dbtype, args.db)
+    # Will check keystone, REST API, and Storm
+    fail = stage_three(args.single, args.monapi)
 
     if fail:
         print('*****TEST FAILED*****')
