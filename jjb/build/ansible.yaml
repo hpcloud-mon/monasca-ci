@@ -11,6 +11,12 @@
             wipe-workspace: true
     builders:
         - shell: ansible-lint -x templating tasks/*.yml
+        - shell: mkdir tars; tar -czf tars/{name}.tar.gz --exclude tars --exclude .git .
+    publishers:
+        - archive:
+            artifacts: 'tars/*.tar.gz'
+        - send-email-notification
+        - Build_Monasca-Single-Node
 
 
 - project:
