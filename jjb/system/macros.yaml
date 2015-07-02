@@ -1,4 +1,10 @@
 - publisher:
+    name: notify-team
+    publishers:
+      - send-email-notification
+#      - send-hipchat-notification
+
+- publisher:
     name: send-email-notification
     publishers:
       - email:
@@ -10,3 +16,54 @@
       - copyartifact:
           project: "{project_name}"
           target: "artifacts/"
+
+- builder:
+    name: copy-all-artifacts
+    builders:
+        - copy-artifact:
+            project_name: monasca-agent
+        - copy-artifact:
+            project_name: monasca-api
+        - copy-artifact:
+            project_name: monasca-notification
+        - copy-artifact:
+            project_name: monasca-persister
+        - copy-artifact:
+            project_name: monasca-thresh
+        - copy-artifact:
+            project_name: python-monascaclient
+        - copy-artifact:
+            project_name: ansible-influxdb-lint
+        - copy-artifact:
+            project_name: ansible-kafka-lint
+        - copy-artifact:
+            project_name: ansible-monasca-agent-lint
+        - copy-artifact:
+            project_name: ansible-monasca-api-lint
+        - copy-artifact:
+            project_name: ansible-monasca-default-alarms-lint
+        - copy-artifact:
+            project_name: ansible-monasca-keystone-lint
+        - copy-artifact:
+            project_name: ansible-monasca-notification-lint
+        - copy-artifact:
+            project_name: ansible-monasca-persister-lint
+        - copy-artifact:
+            project_name: ansible-monasca-schema-lint
+        - copy-artifact:
+            project_name: ansible-monasca-thresh-lint
+        - copy-artifact:
+            project_name: ansible-monasca-ui-lint
+        - copy-artifact:
+            project_name: ansible-percona-lint
+        - copy-artifact:
+            project_name: ansible-storm-lint
+        - copy-artifact:
+            project_name: ansible-vertica-lint
+        - copy-artifact:
+            project_name: ansible-zookeeper-lint
+
+- builder:
+    name: uncompress-roles
+    builders:
+        - shell: uncompress-roles.sh "{target_dir}"

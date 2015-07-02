@@ -12,4 +12,4 @@
       artifactDaysToKeep: -1
       artifactNumToKeep: -1
     publishers:
-        - send-email-notification
+        - notify-team

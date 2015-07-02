@@ -14,23 +14,13 @@
     triggers:
       - pollscm: "*/5 * * * *"
     builders:
-        - copy-artifact:
-            project_name: monasca-agent
-        - copy-artifact:
-            project_name: monasca-api
-        - copy-artifact:
-            project_name: monasca-notification
-        - copy-artifact:
-            project_name: monasca-persister
-        - copy-artifact:
-            project_name: monasca-thresh
-        - copy-artifact:
-            project_name: python-monascaclient
+        - copy-all-artifacts
+        - uncompress-roles:
+            target_dir: single-node/roles
         - shell: |
             #!/bin/bash
             cd system
             ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} docker_start.yml
-            ansible-galaxy install -r requirements.yml -p ./single-node/roles -f
             cd single-node
             ansible-playbook -i hosts site.yml
     publishers:
@@ -41,6 +31,7 @@
                     #!/bin/bash
                     cd system
                     ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} docker_stop.yml
+        - notify-team
 
 # In the future take the inventory written by docker start and save as an artifact then I can use this to trigger more tests and move the stop
 # to after all the test.
