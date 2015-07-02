@@ -16,7 +16,7 @@
     builders:
         - copy-all-artifacts
         - uncompress-roles:
-            target_dir: single-node/roles
+            target_dir: system/single-node/roles
         - shell: |
             #!/bin/bash
             cd system
