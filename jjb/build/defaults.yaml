@@ -18,5 +18,5 @@
             timeout: 60
             fail: true
     publishers:
-        - send-email-notification
+        - notify-team
         - Build_Monasca-Single-Node

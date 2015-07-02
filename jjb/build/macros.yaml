@@ -1,4 +1,10 @@
 - publisher:
+    name: notify-team
+    publishers:
+      - send-email-notification
+#      - send-hipchat-notification
+
+- publisher:
     name: send-email-notification
     publishers:
       - email:
