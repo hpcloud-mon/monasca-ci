@@ -66,4 +66,4 @@
 - builder:
     name: uncompress-roles
     builders:
-        - shell: uncompress-roles.sh "{target_dir}"
+        - shell: ./uncompress-roles.sh "{target_dir}"
