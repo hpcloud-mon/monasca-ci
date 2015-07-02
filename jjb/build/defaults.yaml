@@ -7,8 +7,8 @@
     concurrent: true
     disabled: false
     logrotate:
-        daysToKeep: 180
-        numToKeep: 90
+        daysToKeep: 90
+        numToKeep: 50
         artifactDaysToKeep: -1
         artifactNumToKeep: -1
     triggers:
