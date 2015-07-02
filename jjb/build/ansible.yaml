@@ -15,7 +15,6 @@
     publishers:
         - archive:
             artifacts: 'tars/*.tar.gz'
-        - notify-team
         - Build_Monasca-Single-Node
 
 

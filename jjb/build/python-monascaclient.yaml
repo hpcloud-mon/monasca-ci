@@ -16,5 +16,4 @@
     publishers:
         - archive:
             artifacts: 'dist/*.whl'
-        - notify-team
         - Build_Monasca-Single-Node

@@ -17,5 +17,4 @@
     publishers:
         - archive:
             artifacts: 'target/*-shaded.jar'
-        - notify-team
         - Build_Monasca-Single-Node

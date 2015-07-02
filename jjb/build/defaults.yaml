@@ -18,7 +18,6 @@
             timeout: 60
             fail: true
     publishers:
-        - notify-team
         - Build_Monasca-Single-Node
     hipchat:
       enabled: true
