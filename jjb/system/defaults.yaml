@@ -13,3 +13,10 @@
       artifactNumToKeep: -1
     publishers:
         - notify-team
+    hipchat:
+      enabled: true
+      rooms:
+        - 'Monitoring'
+      notify-unstable: true
+      notify-failure: true
+      notify-back-to-normal: true
