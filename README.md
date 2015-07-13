@@ -37,6 +37,11 @@ There are few things to note that aren't goals:
 A Docker image with a customized Jenkins is available from the Docker registry as 'monasca/ci' the build scripts for it are
 [here](https://github.com/hpcloud-mon/monasca-docker/tree/master/ci).
 
+### Implementation Notes
+- The system jobs uses a local pip cache so on the jenkins box to avoid repeated downloads.
+- Most other remote packages are downloaded over http including apt in many cases. Downloads of these can be mitigated by a local caching proxy
+  for example, https://github.com/jpetazzo/squid-in-a-can
+
 ## Code structure
 - `jjb` - Contains the (Jenkins Job Builder)[http://docs.openstack.org/infra/jenkins-job-builder/] job definitions.
 - `system` - Contains the scripts used by Jenkins to build the Monasca system. Various configurations are supported and run by different Jenkins jobs.
