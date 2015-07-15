@@ -12,7 +12,7 @@
                 before: true
             wipe-workspace: true
     triggers:
-      - pollscm: "*/5 * * * *"
+      - pollscm: "H/5 * * * *"
     builders:
         - copy-all-artifacts
         - uncompress-roles:

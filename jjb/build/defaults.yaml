@@ -12,7 +12,7 @@
         artifactDaysToKeep: -1
         artifactNumToKeep: -1
     triggers:
-        - pollscm: "*/5 * * * *"
+        - pollscm: "H/5 * * * *"
     wrappers:
         - timeout:
             timeout: 60
