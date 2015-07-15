@@ -21,8 +21,7 @@
         - Build_Monasca-Single-Node
     hipchat:
       enabled: true
-      rooms:
-          - 'Monitoring'
+      room: 'Monitoring'
       notify-unstable: true
       notify-failure: true
       notify-back-to-normal: true
