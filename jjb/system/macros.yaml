@@ -17,13 +17,13 @@
         - copy-artifact:
             project_name: monasca-agent
         - copy-artifact:
-            project_name: monasca-api
+            project_name: monasca-api-java
         - copy-artifact:
             project_name: monasca-notification
         - copy-artifact:
-            project_name: monasca-persister
+            project_name: monasca-persister-java
         - copy-artifact:
-            project_name: monasca-thresh
+            project_name: monasca-thresh-java
         - copy-artifact:
             project_name: python-monascaclient
         - copy-artifact:
