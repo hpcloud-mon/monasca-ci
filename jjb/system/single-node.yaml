@@ -2,6 +2,11 @@
     name: Monasca-Single-Node
     project-type: freestyle
     description: Build a single node Monasca system and run tests against it.
+    parameters:
+        - string:
+            name: TRIGGER_JOB
+            default: python-monascaclient
+            description: "The job that triggered this build, the latest build artifact will be used from the trigger job."
     scm:
         - git:
             url: https://github.com/hpcloud-mon/monasca-ci
@@ -15,6 +20,8 @@
       - pollscm: "H/5 * * * *"
     builders:
         - copy-all-artifacts
+        - copy-artifact:  # The specific service triggering this one will be built against everything else at master.
+            project_name: ${TRIGGER_JOB}
         - uncompress-roles:
             target_dir: system/single-node/roles
         - shell: |

@@ -12,7 +12,7 @@
           target: "artifacts/"
 
 - builder:
-    name: copy-all-artifacts
+    name: copy-all-artifacts  # copies all artifacts from the master branches for each project
     builders:
         - copy-artifact:
             project_name: monasca-agent
