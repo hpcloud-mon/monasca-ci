@@ -19,47 +19,20 @@
             artifacts: 'target/*-shaded.jar'
         - Build_Monasca-Single-Node
 
-- job-template:
-    name: '{name}-java-dev'
-    project-type: freestyle
-    description: 'Build a branch of {name}'
-    scm:
-        - git:
-           url: '{repo}'
-           name: origin
-           branches:
-              - :!master
-           choosing-strategy: gerrit
-           skip-tag: true
-           prune: true
-           clean:
-               before: true
-           wipe-workspace: true
-    builders:
-        - maven-target:
-            goals: "clean package"
-    publishers:
-        - archive:
-            artifacts: 'target/*-shaded.jar'
-        - Build_Monasca-Single-Node-Params
-
 - project:
     name: monasca-api
     repo: https://github.com/stackforge/monasca-api
     jobs:
       - '{name}-java'
-      - '{name}-java-dev'
 
 - project:
     name: monasca-persister
     repo: https://github.com/stackforge/monasca-persister
     jobs:
       - '{name}-java'
-      - '{name}-java-dev'
 
 - project:
     name: monasca-thresh
     repo: https://github.com/stackforge/monasca-thresh
     jobs:
       - '{name}-java'
-      - '{name}-java-dev'

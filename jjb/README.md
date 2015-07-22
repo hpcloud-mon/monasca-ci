@@ -7,3 +7,6 @@ Jenkins Job Builder 1.2.0 is the version used.
 
 *system* - Includes jobs that build and test the entire Monasca System. These jobs are triggered by the various build jobs.
 
+# Known issues
+- Projects hosted in gerrit have no branches and so the only way to test changesets is full integration with gerrit, ie a user with ssh access.
+  This effectively makes it unusable for an immutable system like this.
