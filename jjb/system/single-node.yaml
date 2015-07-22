@@ -20,7 +20,7 @@
       - pollscm: "H/5 * * * *"
     builders:
         - copy-all-artifacts
-        - copy-artifact:  # The specific service triggering this one will be built against everything else at master.
+        - copy-artifact:  # The specific service triggering this build will have the latest changes used.
             project_name: ${TRIGGER_JOB}
         - uncompress-roles:
             target_dir: system/single-node/roles
