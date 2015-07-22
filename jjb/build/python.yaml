@@ -1,0 +1,80 @@
+- job-template:
+    name: '{name}-python'
+    scm:
+        - git:
+            url: '{repo}'
+            name: origin
+            skip-tag: true
+            prune: true
+            clean:
+                before: true
+            wipe-workspace: true
+    builders:
+        - shell: "nosetests --with-xunit --with-xcoverage --cover-package=monasca_notification --cover-inclusive"
+        - shell: "pep8 ./ | tee pep8.txt"
+        - shell: python ./setup.py bdist_wheel
+    publishers:
+        - junit:
+            results: nosetests.xml
+        - violations:
+            pep8:
+              min: 0
+              max: 1
+              unstable: 1
+              pattern: '**/pep8.txt'
+        - archive:
+            artifacts: 'dist/*.whl'
+        - Build_Monasca-Single-Node
+
+- job-template:
+    name: '{name}-python-dev'
+    scm:
+        - git:
+            url: '{repo}'
+            name: origin
+            branches:
+              - :!master
+            choosing-strategy: gerrit
+            skip-tag: true
+            prune: true
+            clean:
+                before: true
+            wipe-workspace: true
+    builders:
+        - shell: "nosetests --with-xunit --with-xcoverage --cover-package=monasca_notification --cover-inclusive"
+        - shell: "pep8 ./ | tee pep8.txt"
+        - shell: python ./setup.py bdist_wheel
+    publishers:
+        - junit:
+            results: nosetests.xml
+        - violations:
+            pep8:
+              min: 0
+              max: 1
+              unstable: 1
+              pattern: '**/pep8.txt'
+        - archive:
+            artifacts: 'dist/*.whl'
+        - Build_Monasca-Single-Node-Params
+
+
+- project:
+    name: monasca-notification
+    repo: https://github.com/stackforge/monasca-notification
+    jobs:
+        - '{name}-python'
+        - '{name}-python-dev'
+
+- project:
+    name: monasca-agent
+    repo: https://github.com/stackforge/monasca-agent
+    jobs:
+        - '{name}-python'
+        - '{name}-python-dev'
+
+- project:
+    name: python-monascaclient
+    repo: https://github.com/stackforge/python-monascaclient
+    jobs:
+        - '{name}-python'
+        - '{name}-python-dev'

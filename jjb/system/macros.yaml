@@ -15,17 +15,17 @@
     name: copy-all-artifacts  # copies all artifacts from the master branches for each project
     builders:
         - copy-artifact:
-            project_name: monasca-agent
+            project_name: monasca-agent-python
         - copy-artifact:
             project_name: monasca-api-java
         - copy-artifact:
-            project_name: monasca-notification
+            project_name: monasca-notification-python
         - copy-artifact:
             project_name: monasca-persister-java
         - copy-artifact:
             project_name: monasca-thresh-java
         - copy-artifact:
-            project_name: python-monascaclient
+            project_name: python-monascaclient-python
         - copy-artifact:
             project_name: ansible-influxdb-lint
         - copy-artifact:
