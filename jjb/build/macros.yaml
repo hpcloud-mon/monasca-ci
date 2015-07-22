@@ -7,13 +7,6 @@
 - publisher:
     name: Build_Monasca-Single-Node
     publishers:
-      - trigger:
-          project: Monasca-Single-Node
-          threshold: SUCCESS
-
-- publisher:
-    name: Build_Monasca-Single-Node-Params
-    publishers:
       - trigger-parameterized-builds:
         - project: Monasca-Single-Node
           predefined-parameters: TRIGGER_JOB=${JOB_NAME}

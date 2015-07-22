@@ -6,7 +6,7 @@
         - string:
             name: TRIGGER_JOB
             default: python-monascaclient
-            description: "The job that triggered this build, the latest build artifact will be used from the trigger job."
+            description: "The job that triggered this build, the latest build artifact will be used from the trigger job. The jobs fails if this is empty."
     scm:
         - git:
             url: https://github.com/hpcloud-mon/monasca-ci
