@@ -10,6 +10,8 @@
                 before: true
             wipe-workspace: true
     builders:
+        - shell: pip install -r requirements.txt
+        - shell: pip install -r test-requirements.txt
         - shell: "nosetests --with-xunit --with-xcoverage --cover-package=monasca_notification --cover-inclusive"
         - shell: "pep8 ./ | tee pep8.txt"
         - shell: python ./setup.py bdist_wheel
@@ -41,6 +43,8 @@
                 before: true
             wipe-workspace: true
     builders:
+        - shell: pip install -r requirements.txt
+        - shell: pip install -r test-requirements.txt
         - shell: "nosetests --with-xunit --with-xcoverage --cover-package=monasca_notification --cover-inclusive"
         - shell: "pep8 ./ | tee pep8.txt"
         - shell: python ./setup.py bdist_wheel
@@ -65,16 +69,100 @@
         - '{name}-python'
         - '{name}-python-dev'
 
-- project:
-    name: monasca-agent
-    repo: https://github.com/stackforge/monasca-agent
-    jobs:
-        - '{name}-python'
-        - '{name}-python-dev'
+# python-monascaclient fails to run tests as some need external dependencies and there are pep8 violations
+#- project:
+#    name: python-monascaclient
+#    repo: https://github.com/stackforge/python-monascaclient
+#    jobs:
+#        - '{name}-python'
+#        - '{name}-python-dev'
 
-- project:
-    name: python-monascaclient
-    repo: https://github.com/stackforge/python-monascaclient
-    jobs:
-        - '{name}-python'
-        - '{name}-python-dev'
+- job:
+    name: 'python-monascaclient-python'
+    scm:
+        - git:
+            url: https://github.com/stackforge/python-monascaclient
+            name: origin
+            skip-tag: true
+            prune: true
+            clean:
+                before: true
+            wipe-workspace: true
+    builders:
+        - shell: pip install -r requirements.txt
+        - shell: python ./setup.py bdist_wheel
+    publishers:
+        - archive:
+            artifacts: 'dist/*.whl'
+        - Build_Monasca-Single-Node
+
+- job:
+    name: 'python-monascaclient-python-dev'
+    scm:
+        - git:
+            url: https://github.com/stackforge/python-monascaclient
+            name: origin
+            branches:
+              - :!master
+            choosing-strategy: gerrit
+            skip-tag: true
+            prune: true
+            clean:
+                before: true
+            wipe-workspace: true
+    builders:
+        - shell: pip install -r requirements.txt
+        - shell: python ./setup.py bdist_wheel
+    publishers:
+        - archive:
+            artifacts: 'dist/*.whl'
+        - Build_Monasca-Single-Node-Params
+
+# The monasca agent fails badly on tests so for now gets its own job definitions
+#- project:
+#    name: monasca-agent
+#    repo: https://github.com/stackforge/monasca-agent
+#    jobs:
+#        - '{name}-python'
+#        - '{name}-python-dev'
+
+- job:
+    name: 'monasca-agent-python'
+    scm:
+        - git:
+            url: https://github.com/stackforge/monasca-agent
+            name: origin
+            skip-tag: true
+            prune: true
+            clean:
+                before: true
+            wipe-workspace: true
+    builders:
+        - shell: pip install -r requirements.txt
+        - shell: python ./setup.py bdist_wheel
+    publishers:
+        - archive:
+            artifacts: 'dist/*.whl'
+        - Build_Monasca-Single-Node
+
+- job:
+    name: 'monasca-agent-python-dev'
+    scm:
+        - git:
+            url: https://github.com/stackforge/monasca-agent
+            name: origin
+            branches:
+              - :!master
+            choosing-strategy: gerrit
+            skip-tag: true
+            prune: true
+            clean:
+                before: true
+            wipe-workspace: true
+    builders:
+        - shell: pip install -r requirements.txt
+        - shell: python ./setup.py bdist_wheel
+    publishers:
+        - archive:
+            artifacts: 'dist/*.whl'
+        - Build_Monasca-Single-Node-Params
