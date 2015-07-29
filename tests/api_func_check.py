@@ -308,7 +308,7 @@ def test_version_list():
         full_url = api_url
     url, version = full_url.rsplit('/', 1)
     response = requests.request(method="GET",
-                                url=api_url,
+                                url=url,
                                 headers=default_headers)
 
     verify_response_code(response, 200)
