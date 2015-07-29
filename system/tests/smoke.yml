@@ -1,0 +1,35 @@
+- name: Run Smoke tests
+  hosts: monasca
+  gather_facts: no
+  sudo: yes
+  vars:
+    host_ip: "{{mini_mon}}"
+    test_base: /opt/monasca/ci
+  tasks:
+    - name: Install the influxdb python library
+      pip: name=influxdb virtualenv="{{monasca_virtualenv_dir}}"
+      when: database_type == 'influxdb'
+
+    - name: Create test basedir
+      file: path="{{test_base}}" state=directory
+
+    - name: Populate config vars
+      template: src="../../tests/smoke/smoke2_configs.py.j2" dest="{{test_base}}/smoke2_configs.py"
+
+    - name: Copy the smoke test to the box
+      copy: src="../../tests/smoke/" dest="{{test_base}}/"
+
+    - name: Run the smoke2 test
+      command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/smoke2.py"
+      register: smoke2
+    - debug: var=smoke2.stdout_lines
+
+    - name: Run the smoke test
+      command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/smoke.py"
+      environment:
+        OS_USERNAME: "{{keystone_project_admin}}"
+        OS_PASSWORD: "{{keystone_project_admin_password}}"
+        OS_PROJECT_NAME: "{{keystone_project}}"
+        OS_AUTH_URL: "{{keystone_admin_url}}"
+      register: smoke
+    - debug: var=smoke.stdout_lines

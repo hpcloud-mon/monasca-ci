@@ -1,0 +1,4 @@
+- name: Run the API functional test
+  hosts: monasca[0]
+  gather_facts: no
+
