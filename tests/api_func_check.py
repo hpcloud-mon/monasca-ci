@@ -16,34 +16,17 @@ import datetime
 import json
 import random
 import requests
+import sys
 import time
 import urllib
+import yaml
 
 from jsonschema import validate
 
 from monascaclient import ksclient
 
-url = "http://192.168.10.4:8080/"
-version = "v2.0"
-version_url = url + version
-
-keystone = {
-    'username': 'mini-mon',
-    'password': 'password',
-    'project': 'test',
-    'auth_url': 'http://192.168.10.5:35357/v3'
-}
-ksclient = ksclient.KSClient(**keystone)
-
-default_headers = {
-    'X-Auth-User': 'mini-mon',
-    'X-Auth-Token': ksclient.token,
-    'X-Auth-Key': 'password',
-    'Accept': 'application/json',
-    'User-Agent': 'python-monascaclient',
-    'Content-Type': 'application/json'}
-
-
+api_url = None
+default_headers = None
 timestamp_pattern = ("[0-9]{2}-[0-9]{2}-[0-9]{2}T" +
                      "[0-9]{2}:[0-9]{2}:[0-9]{2}(.[0-9]{0,3})?Z")
 
@@ -305,7 +288,7 @@ alarm_schema = {
 
 def do_request(method, rel_url='', body=None, headers=default_headers):
     return requests.request(method=method,
-                            url=url+version+rel_url,
+                            url=api_url+rel_url,
                             data=json.dumps(body),
                             headers=headers)
 
@@ -320,7 +303,7 @@ def verify_response_code(res, expected):
 # test version info
 def test_version_list():
     response = requests.request(method="GET",
-                                url=url,
+                                url=api_url,
                                 headers=default_headers)
 
     verify_response_code(response, 200)
@@ -671,7 +654,28 @@ def test_alarm_list_get_update_delete():
     verify_response_code(response, 404)
 
 
-def main():
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+    if len(argv) != 2:
+        print "Usage: " + argv[0] + " <config yaml>"
+        return 1
+
+    with open(argv[1], 'r') as config_yaml:
+        config = yaml.load(config_yaml.read())
+
+    key = ksclient.KSClient(**config['keystone'])
+
+    global api_url
+    api_url = config['monasca_api_url']
+    global default_headers
+    default_headers = {'X-Auth-User': config['keystone']['username'],
+                       'X-Auth-Token': key.token,
+                       'X-Auth-Key': config['keystone']['password'],
+                       'Accept': 'application/json',
+                       'User-Agent': 'python-monascaclient',
+                       'Content-Type': 'application/json'}
+
     test_version_list()
     test_version_get()
 

@@ -5,11 +5,14 @@
     - name: Install dependencies for the functional test
       pip: name=jsonschema state=latest virtualenv="{{monasca_virtualenv_dir}}"
 
+    - name: Populate config vars
+      template: src="../../tests/api_func_check.yml.j2" dest="{{test_base}}/api_func_check.yml"
+
     - name: Copy the smoke Api functional test to the box
       copy: src="../../tests/api_func_check.py" dest="{{test_base}}/"
 
     - name: Run the Api functional tests
-      command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/api_func_check.py"
+      command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/api_func_check.py {{test_base}}/api_func_check.yml"
       register: func
     - debug: var=func.stdout_lines
 
