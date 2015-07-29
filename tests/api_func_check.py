@@ -287,6 +287,11 @@ alarm_schema = {
 class APIConnection(object):
     def __init__(self, api_url, keystone_config):
         self.url = api_url
+        if api_url[-1] == '/':
+            self.base_url, self.version = api_url[:-1].rsplit('/', 1)
+        else:
+            self.base_url, self.version = api_url.rsplit('/', 1)
+
         self.ks = ksclient.KSClient(**keystone_config)
         self.headers = {'X-Auth-User': keystone_config['username'],
                         'X-Auth-Token': self.ks.token,
@@ -311,13 +316,8 @@ def verify_response_code(res, expected):
 
 # test version info
 def test_version_list(api):
-    if api.url[-1] == '/':
-        full_url = api.url[:-1]
-    else:
-        full_url = api.url
-    url, version = full_url.rsplit('/', 1)
     response = requests.request(method="GET",
-                                url=url,
+                                url=api.base_url,
                                 headers=api.headers)
 
     verify_response_code(response, 200)
@@ -329,7 +329,7 @@ def test_version_list(api):
     for element in json_data['elements']:
         version_list.append(element['id'])
 
-    assert version in version_list, "Version '{}' not found".format(version)
+    assert api.version in version_list, "Version '{}' not found".format(api.version)
 
 
 def test_version_get(api):
@@ -340,8 +340,7 @@ def test_version_get(api):
     validate(json_data, version_schema)
 
     message = "Version '{}' did not match requested version '{}'"
-    assert json_data['id'] == version, message.format(json_data['id'],
-                                                      version)
+    assert json_data['id'] == api.version, message.format(json_data['id'], api.version)
 
 
 # test metric post and list
