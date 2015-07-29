@@ -302,6 +302,11 @@ def verify_response_code(res, expected):
 
 # test version info
 def test_version_list():
+    if api_url[-1] == '/':
+        full_url = api_url[:-1]
+    else:
+        full_url = api_url
+    url, version = full_url.rsplit('/', 1)
     response = requests.request(method="GET",
                                 url=api_url,
                                 headers=default_headers)
