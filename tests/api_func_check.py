@@ -25,8 +25,6 @@ from jsonschema import validate
 
 from monascaclient import ksclient
 
-api_url = None
-default_headers = None
 timestamp_pattern = ("[0-9]{2}-[0-9]{2}-[0-9]{2}T" +
                      "[0-9]{2}:[0-9]{2}:[0-9]{2}(.[0-9]{0,3})?Z")
 
@@ -286,11 +284,22 @@ alarm_schema = {
 }
 
 
-def do_request(method, rel_url='', body=None, headers=default_headers):
-    return requests.request(method=method,
-                            url=api_url+rel_url,
-                            data=json.dumps(body),
-                            headers=headers)
+class APIConnection(object):
+    def __init__(self, api_url, keystone_config):
+        self.url = api_url
+        self.ks = ksclient.KSClient(**keystone_config)
+        self.headers = {'X-Auth-User': keystone_config['username'],
+                        'X-Auth-Token': self.ks.token,
+                        'X-Auth-Key': keystone_config['password'],
+                        'Accept': 'application/json',
+                        'User-Agent': 'python-monascaclient',
+                        'Content-Type': 'application/json'}
+
+    def do_request(self, method, rel_url='', body=None):
+        return requests.request(method=method,
+                                url=self.url+rel_url,
+                                data=json.dumps(body),
+                                headers=self.headers)
 
 
 def verify_response_code(res, expected):
@@ -301,15 +310,15 @@ def verify_response_code(res, expected):
 
 
 # test version info
-def test_version_list():
-    if api_url[-1] == '/':
-        full_url = api_url[:-1]
+def test_version_list(api):
+    if api.url[-1] == '/':
+        full_url = api.url[:-1]
     else:
-        full_url = api_url
+        full_url = api.url
     url, version = full_url.rsplit('/', 1)
     response = requests.request(method="GET",
                                 url=url,
-                                headers=default_headers)
+                                headers=api.headers)
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -323,8 +332,8 @@ def test_version_list():
     assert version in version_list, "Version '{}' not found".format(version)
 
 
-def test_version_get():
-    response = do_request("GET")
+def test_version_get(api):
+    response = api.do_request("GET")
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -336,7 +345,7 @@ def test_version_get():
 
 
 # test metric post and list
-def test_metric_post():
+def test_metric_post(api):
     body = {
         "name": "name1",
         "dimensions": {
@@ -347,12 +356,12 @@ def test_metric_post():
         "value": 1.0
     }
 
-    response = do_request("POST", "/metrics", body)
+    response = api.do_request("POST", "/metrics", body)
 
     verify_response_code(response, 204)
 
 
-def test_metric_post_value_meta():
+def test_metric_post_value_meta(api):
     body = {
         "name": "name1",
         "dimensions": {
@@ -366,12 +375,12 @@ def test_metric_post_value_meta():
         }
     }
 
-    response = do_request("POST", "/metrics", body)
+    response = api.do_request("POST", "/metrics", body)
 
     verify_response_code(response, 204)
 
 
-def test_metric_post_array():
+def test_metric_post_array(api):
     body = [
         {
             "name": "name1",
@@ -391,13 +400,13 @@ def test_metric_post_array():
                 "key1": "value1",
                 "key2": "value2"}}]
 
-    response = do_request("POST", "/metrics", body)
+    response = api.do_request("POST", "/metrics", body)
 
     verify_response_code(response, 204)
 
 
-def test_metric_list():
-    response = do_request("GET", "/metrics")
+def test_metric_list(api):
+    response = api.do_request("GET", "/metrics")
 
     verify_response_code(response, 200)
 
@@ -406,8 +415,8 @@ def test_metric_list():
     validate(json_data, list_schema)
 
 
-def test_metric_name_list():
-    response = do_request("GET", "/metrics/names")
+def test_metric_name_list(api):
+    response = api.do_request("GET", "/metrics/names")
 
     verify_response_code(response, 200)
 
@@ -416,7 +425,7 @@ def test_metric_name_list():
     validate(json_data, list_schema)
 
 
-def test_measurement_list():
+def test_measurement_list(api):
     one_hour_ago = datetime.datetime.utcnow()-datetime.timedelta(hours=1)
     one_hour_ago = one_hour_ago - datetime.timedelta(microseconds=
                                                      one_hour_ago.microsecond)
@@ -427,7 +436,7 @@ def test_measurement_list():
     }
     query_str = urllib.urlencode(query_params)
 
-    response = do_request("GET", "/metrics/measurements?"+query_str)
+    response = api.do_request("GET", "/metrics/measurements?"+query_str)
 
     verify_response_code(response, 200)
 
@@ -436,7 +445,7 @@ def test_measurement_list():
     validate(json_data, list_schema)
 
 
-def test_statistics_get():
+def test_statistics_get(api):
     one_hour_ago = datetime.datetime.utcnow()-datetime.timedelta(minutes=1)
     one_hour_ago = one_hour_ago - datetime.timedelta(microseconds=
                                                      one_hour_ago.microsecond)
@@ -448,7 +457,7 @@ def test_statistics_get():
     }
     query_str = urllib.urlencode(query_params)
 
-    response = do_request("GET", "/metrics/statistics?"+query_str)
+    response = api.do_request("GET", "/metrics/statistics?"+query_str)
 
     verify_response_code(response, 200)
 
@@ -457,7 +466,7 @@ def test_statistics_get():
     validate(json_data, list_schema)
 
 
-def test_notification_CRUD():
+def test_notification_CRUD(api):
     # define a random name to reduce chances of collision
     notif_name = "Test_api_func_{}".format(random.randint(1, 1000000))
 
@@ -467,7 +476,7 @@ def test_notification_CRUD():
         "address": "http://somesite.com"
     }
 
-    response = do_request("POST", "/notification-methods", body)
+    response = api.do_request("POST", "/notification-methods", body)
 
     verify_response_code(response, 201)
 
@@ -479,7 +488,7 @@ def test_notification_CRUD():
 
     notification_id = json_data['id']
 
-    response = do_request("GET", "/notification-methods")
+    response = api.do_request("GET", "/notification-methods")
 
     verify_response_code(response, 200)
 
@@ -487,7 +496,7 @@ def test_notification_CRUD():
     list_schema['properties']['elements']['items'] = notification_schema
     validate(json_data, list_schema)
 
-    response = do_request("GET", "/notification-methods/"+notification_id)
+    response = api.do_request("GET", "/notification-methods/"+notification_id)
 
     verify_response_code(response, 200)
 
@@ -501,7 +510,7 @@ def test_notification_CRUD():
         "address": "someone@somewhere.com"
     }
 
-    response = do_request("PUT", "/notification-methods/"+notification_id,
+    response = api.do_request("PUT", "/notification-methods/"+notification_id,
                           body)
 
     verify_response_code(response, 200)
@@ -512,13 +521,13 @@ def test_notification_CRUD():
     assert json_data['type'] == body['type'], message.format(json_data['type'],
                                                              body['type'])
 
-    response = do_request("DELETE", "/notification-methods/"+notification_id)
+    response = api.do_request("DELETE", "/notification-methods/"+notification_id)
 
     verify_response_code(response, 204)
 
 
 # test alarm definitions
-def test_alarm_definition_CRUD():
+def test_alarm_definition_CRUD(api):
     # define a random name to reduce chances of collision
     def_name = "Test_api_func_{}".format(random.randint(1, 1000000))
 
@@ -531,14 +540,14 @@ def test_alarm_definition_CRUD():
         ]
     }
 
-    response = do_request("POST", "/alarm-definitions", body)
+    response = api.do_request("POST", "/alarm-definitions", body)
 
     verify_response_code(response, 201)
     json_data = json.loads(response.text)
     validate(json_data, alarm_definition_schema)
     definition_id = json_data['id']
 
-    response = do_request("GET", "/alarm-definitions")
+    response = api.do_request("GET", "/alarm-definitions")
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -547,7 +556,7 @@ def test_alarm_definition_CRUD():
     validate(json_data, list_schema)
 
     # list
-    response = do_request("GET", "/alarm-definitions/"+definition_id)
+    response = api.do_request("GET", "/alarm-definitions/"+definition_id)
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -563,7 +572,7 @@ def test_alarm_definition_CRUD():
         "actions_enabled": True
     }
 
-    response = do_request("PUT", "/alarm-definitions/"+definition_id, body)
+    response = api.do_request("PUT", "/alarm-definitions/"+definition_id, body)
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -575,20 +584,20 @@ def test_alarm_definition_CRUD():
         "severity": "HIGH"
     }
 
-    response = do_request("PATCH", "/alarm-definitions/"+definition_id, body)
+    response = api.do_request("PATCH", "/alarm-definitions/"+definition_id, body)
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
     validate(json_data, alarm_definition_schema)
 
     # delete
-    response = do_request("DELETE", "/alarm-definitions/"+definition_id)
+    response = api.do_request("DELETE", "/alarm-definitions/"+definition_id)
 
     verify_response_code(response, 204)
 
 
-def test_alarm_state_history_list():
-    response = do_request("GET", "/alarms/state-history")
+def test_alarm_state_history_list(api):
+    response = api.do_request("GET", "/alarms/state-history")
 
     verify_response_code(response, 200)
 
@@ -597,9 +606,9 @@ def test_alarm_state_history_list():
     validate(json_data, list_schema)
 
 
-def test_alarm_list_get_update_delete():
+def test_alarm_list_get_update_delete(api):
     # alarm list
-    response = do_request("GET", "/alarms")
+    response = api.do_request("GET", "/alarms")
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -615,11 +624,11 @@ def test_alarm_list_get_update_delete():
         "link": "http://somesite.com"
     }
 
-    response = do_request("PUT", "/alarms/"+alarm_id, body)
+    response = api.do_request("PUT", "/alarms/"+alarm_id, body)
 
     verify_response_code(response, 200)
 
-    response = do_request("GET", "/alarms/"+alarm_id)
+    response = api.do_request("GET", "/alarms/"+alarm_id)
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -634,14 +643,14 @@ def test_alarm_list_get_update_delete():
         "lifecycle_state": "closed"
     }
 
-    response = do_request("PATCH", "/alarms/"+alarm_id, body)
+    response = api.do_request("PATCH", "/alarms/"+alarm_id, body)
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
     validate(json_data, alarm_schema)
     assert json_data['lifecycle_state'] == "closed"
 
-    response = do_request("GET", "/alarms/"+alarm_id)
+    response = api.do_request("GET", "/alarms/"+alarm_id)
 
     verify_response_code(response, 200)
     json_data = json.loads(response.text)
@@ -650,11 +659,11 @@ def test_alarm_list_get_update_delete():
     assert json_data['link'] == "http://somesite.com"
 
     # alarm delete
-    response = do_request("DELETE", "/alarms/"+alarm_id)
+    response = api.do_request("DELETE", "/alarms/"+alarm_id)
 
     verify_response_code(response, 204)
 
-    response = do_request("GET", "/alarms/"+alarm_id)
+    response = api.do_request("GET", "/alarms/"+alarm_id)
 
     verify_response_code(response, 404)
 
@@ -669,35 +678,25 @@ def main(argv=None):
     with open(argv[1], 'r') as config_yaml:
         config = yaml.load(config_yaml.read())
 
-    key = ksclient.KSClient(**config['keystone'])
+    api = APIConnection(config['monasca_api_url'], config['keystone'])
 
-    global api_url
-    api_url = config['monasca_api_url']
-    global default_headers
-    default_headers = {'X-Auth-User': config['keystone']['username'],
-                       'X-Auth-Token': key.token,
-                       'X-Auth-Key': config['keystone']['password'],
-                       'Accept': 'application/json',
-                       'User-Agent': 'python-monascaclient',
-                       'Content-Type': 'application/json'}
+    test_version_list(api)
+    test_version_get(api)
 
-    test_version_list()
-    test_version_get()
+    test_notification_CRUD(api)
 
-    test_notification_CRUD()
+    test_metric_post(api)
+    test_metric_post_array(api)
+    test_metric_post_value_meta(api)
+    test_metric_list(api)
+    test_metric_name_list(api)
+    test_measurement_list(api)
+    test_statistics_get(api)
 
-    test_metric_post()
-    test_metric_post_array()
-    test_metric_post_value_meta()
-    test_metric_list()
-    test_metric_name_list()
-    test_measurement_list()
-    test_statistics_get()
+    test_alarm_definition_CRUD(api)
 
-    test_alarm_definition_CRUD()
-
-    test_alarm_state_history_list()
-    test_alarm_list_get_update_delete()
+    test_alarm_state_history_list(api)
+    test_alarm_list_get_update_delete(api)
 
     print("pass")
 
