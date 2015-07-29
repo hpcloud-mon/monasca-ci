@@ -4,14 +4,10 @@
   sudo: yes
   vars:
     host_ip: "{{mini_mon}}"
-    test_base: /opt/monasca/ci
   tasks:
     - name: Install the influxdb python library
       pip: name=influxdb virtualenv="{{monasca_virtualenv_dir}}"
       when: database_type == 'influxdb'
-
-    - name: Create test basedir
-      file: path="{{test_base}}" state=directory
 
     - name: Populate config vars
       template: src="../../tests/smoke/smoke2_configs.py.j2" dest="{{test_base}}/smoke2_configs.py"

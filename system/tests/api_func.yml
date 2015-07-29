@@ -1,4 +1,15 @@
 - name: Run the API functional test
   hosts: monasca[0]
   gather_facts: no
+  tasks:
+    - name: Install dependencies for the functional test
+      pip: name=jsonschema state=latest virtualenv="{{monasca_virtualenv_dir}}"
+
+    - name: Copy the smoke Api functional test to the box
+      copy: src="../../tests/api_func_check.py" dest="{{test_base}}/"
+
+    - name: Run the Api functional tests
+      command: "{{monasca_virtualenv_dir}}/bin/python {{test_base}}/api_func_check.py"
+      register: func
+    - debug: var=func.stdout_lines
 

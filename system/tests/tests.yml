@@ -1,2 +1,13 @@
-- include: smoke.yml
-#- include: api_func.yml
+- Setup test env
+  hosts: monasca
+  gather_facts: no
+  sudo: yes
+  vars:
+    test_base: /opt/monasca/ci
+  tasks:
+    - name: Create test basedir
+      file: path="{{test_base}}" state=directory
+
+
+- include: smoke.yml test_base=/opt/monasca/ci
+- include: api_func.yml test_base=/opt/monasca/ci
