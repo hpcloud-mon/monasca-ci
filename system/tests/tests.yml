@@ -1,4 +1,4 @@
-- Setup test env
+- name: Setup test env
   hosts: monasca
   gather_facts: no
   sudo: yes
