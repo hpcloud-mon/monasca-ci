@@ -1,9 +1,9 @@
 - name: Run Smoke tests
-  hosts: monasca
+  hosts: monasca_master
   gather_facts: no
   sudo: yes
   vars:
-    host_ip: "{{mini_mon}}"
+    host_ip: "{{monasca_api_host}}"
   tasks:
     - name: Install the influxdb python library
       pip: name=influxdb virtualenv="{{monasca_virtualenv_dir}}"

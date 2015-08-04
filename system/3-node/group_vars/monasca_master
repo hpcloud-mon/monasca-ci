@@ -1,0 +1,22 @@
+---
+# Enable/disable services
+storm_nimbus_enabled: true
+storm_supervisor_enabled: false
+
+# credentials
+mon_influxdb_users:
+  - username: 'mon_api'
+    password: 'password'
+  - username: 'mon_persister'
+    password: 'password'
+mon_mysql_users:
+  - username: 'notification'
+    password: 'password'
+  - username: 'monapi'
+    password: 'password'
+  - username: 'thresh'
+    password: 'password'
+mysql_admin_password: password
+
+# Other settings
+percona_master_node: true

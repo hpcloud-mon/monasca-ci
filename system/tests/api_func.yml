@@ -1,5 +1,5 @@
 - name: Run the API functional test
-  hosts: monasca[0]
+  hosts: monasca_master
   gather_facts: no
   tasks:
     - name: Install dependencies for the functional test

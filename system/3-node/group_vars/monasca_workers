@@ -1,0 +1,4 @@
+---
+# Enable/disable services
+storm_nimbus_enabled: false
+storm_supervisor_enabled: true
