@@ -6,11 +6,11 @@ monasca_workers
 {% set workers = node_ips.results[1:] %}
 
 [monasca_master]
-{{master.item}} ansible_ssh_user=root ansible_ssh_pass=docker.io ansible_ssh_host={{master.stdout}} docker_name={{job_name}}_{{master.item}}_{{build_number}}
+{{master.stdout}} ansible_ssh_user=root ansible_ssh_pass=docker.io docker_name={{job_name}}_{{master.item}}_{{build_number}}
 
 [monasca_workers]
 {% for node in workers %}
-{{node.item}} ansible_ssh_user=root ansible_ssh_pass=docker.io ansible_ssh_host={{node.stdout}} docker_name={{job_name}}_{{node.item}}_{{build_number}}
+{{node.stdout}} ansible_ssh_user=root ansible_ssh_pass=docker.io docker_name={{job_name}}_{{node.item}}_{{build_number}}
 {% endfor %}
 
 [monasca:vars]

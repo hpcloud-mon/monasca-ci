@@ -71,15 +71,6 @@
   vars:
     monasca_agent_service: monitoring
     monasca_checks:
-      host_alive:
-        init_config:
-          ssh_port: 22
-          ssh_timeout: 0.5
-          ping_timeout: 1
-        instances:
-          - name: devstack
-            host_name: 192.168.10.5
-            alive_test: ssh
     skip_install: True
   roles:
     - {role: monasca-api,
