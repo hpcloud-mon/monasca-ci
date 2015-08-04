@@ -1,7 +1,7 @@
 ---
 database_type: influxdb
 openstack: "{{keystone_host}}"
-mini_mon: "{{groups['monasca'][0]}}"
+mini_mon: "{{hostvars[groups['monasca'][0]]['ansible_ssh_host']}}"
 
 # keystone_port and keystone_admin_port come from the inventory but are for external access not container->container
 keystone_url: "http://{{openstack}}:5000/v3"
