@@ -36,5 +36,4 @@
     register: node_ips
     with_items: "{{nodes.split(',')}}"
   - name: Write out Inventory for the Docker containers
-    template: src=docker_inventory.j2 dest="{{ansible_env['PWD']}}/{{inventory_dir}}/hosts"
-
+    template: src=docker_inventory.j2 dest="{{ansible_env['PWD']}}/{{hosts_dir}}/hosts"
