@@ -51,9 +51,9 @@
   hosts: monasca
   sudo: yes
   roles:
+    - {role: influxdb, tags: [influxdb]}
     - {role: zookeeper, tags: [zookeeper]}
     - {role: kafka, tags: [kafka]}
-    - {role: influxdb, tags: [influxdb]}
     - {role: percona, tags: [mysql, percona]}
 
 - name: Setup Keystone users/endpoints and db schema
