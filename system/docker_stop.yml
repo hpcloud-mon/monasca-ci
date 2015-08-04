@@ -11,7 +11,7 @@
   - name: Stop Monasca nodes
     docker:
         image: ubuntu-upstart:14.04
-        name: "{{job_name}}_{{item1}}_{{build_number}}"
+        name: "{{job_name}}_{{item}}_{{build_number}}"
         state: absent
     with_items: "{{nodes.split(',')}}"
     tags:
