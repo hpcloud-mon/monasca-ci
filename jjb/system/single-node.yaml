@@ -27,7 +27,7 @@
         - shell: |
             #!/bin/bash
             cd system
-            ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} -e inventory_dir=${PWD}/single-node -e nodes=node1 docker_start.yml
+            ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} -e inventory_dir=single-node -e nodes=node1 docker_start.yml
             cd single-node
             ansible-playbook -i hosts site.yml
     publishers:
