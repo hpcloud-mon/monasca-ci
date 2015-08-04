@@ -1,5 +1,7 @@
 [monasca]
-node1 ansible_ssh_user=root ansible_ssh_pass=docker.io ansible_ssh_host={{node1_ip}} docker_name={{node1_name}}
+{% for node in node_ips.results %}
+{{node.item}} ansible_ssh_user=root ansible_ssh_pass=docker.io ansible_ssh_host={{node.stdout}} docker_name={{job_name}}_{{node.item}}_{{build_number}}
+{% endfor %}
 
 [monasca:vars]
 keystone_host={{openstack_ip}}

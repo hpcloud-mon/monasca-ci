@@ -1,7 +1,7 @@
 - job:
-    name: Monasca-Single-Node
+    name: Monasca-3-Node
     project-type: freestyle
-    description: Build a single node Monasca system and run tests against it.
+    description: Build a 3 node HA Monasca system and run tests against it.
     parameters:
         - string:
             name: TRIGGER_JOB
@@ -23,12 +23,12 @@
         - copy-artifact:  # The specific service triggering this build will have the latest changes used.
             project_name: ${TRIGGER_JOB}
         - uncompress-roles:
-            target_dir: system/single-node/roles
+            target_dir: system/3-node/roles
         - shell: |
             #!/bin/bash
             cd system
-            ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} -e inventory_dir=${PWD}/single-node -e nodes=node1 docker_start.yml
-            cd single-node
+            ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} -e inventory_dir=${PWD}/3-node -e nodes=node1,node2,node3 docker_start.yml
+            cd 3-node
             ansible-playbook -i hosts site.yml
     publishers:
         - postbuildscript:
@@ -37,7 +37,7 @@
                 - shell: |
                     #!/bin/bash
                     cd system
-                    ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} -e nodes=node1 docker_stop.yml
+                    ansible-playbook -i hosts -c local -e job_name=${JOB_NAME} -e build_number=${BUILD_NUMBER} -e nodes=node1,node2,node3 docker_stop.yml
 
 # In the future take the inventory written by docker start and save as an artifact then I can use this to trigger more tests and move the stop
 # to after all the test.

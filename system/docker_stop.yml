@@ -1,17 +1,18 @@
 - name: Stop all docker images
   hosts: localhost
   tasks:
-  - name: Openstack
+  - name: Stop Openstack Node
     docker:
         image: monasca/openstack:{{ openstack_tag | default('latest') }}
         name: "{{job_name}}_openstack_{{build_number}}"
         state: absent
     tags:
       - openstack
-  - name: Node1
+  - name: Stop Monasca nodes
     docker:
         image: ubuntu-upstart:14.04
-        name: "{{job_name}}_node1_{{build_number}}"
+        name: "{{job_name}}_{{item1}}_{{build_number}}"
         state: absent
+    with_items: "{{nodes.split(',')}}"
     tags:
-      - node1
+      - nodes

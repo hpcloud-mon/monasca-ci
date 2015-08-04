@@ -2,7 +2,6 @@
   hosts: localhost
   vars:
     openstack_name: "{{job_name}}_openstack_{{build_number}}"
-    node1_name: "{{job_name}}_node1_{{build_number}}"
   tasks:
   - name: Openstack
     docker:
@@ -15,27 +14,27 @@
         state: started
     tags:
       - openstack
-  - name: Determin IP of the Openstack container
+  - name: Determine IP of the Openstack container
     command: "{{ansible_env['PWD']}}/docker_ip.sh {{openstack_name}}"
     register: openstack_inspect
   - set_fact:
         openstack_ip: "{{openstack_inspect.stdout}}"
-  - name: Node1
+  - name: Create nodes
     docker:
         image: ubuntu-upstart:14.04
-        name: "{{node1_name}}"
+        name: "{{job_name}}_{{item}}_{{build_number}}"
         ports:
           - "8080:81{{build_number}}"
         volumes:
           - /var/tmp:/var/pip-cache
         state: started
     tags:
-      - node1
-  - name: Determin IP of the Node1 container
-    command: "{{ansible_env['PWD']}}/docker_ip.sh {{node1_name}}"
-    register: node1_inspect
-  - set_fact:
-        node1_ip: "{{node1_inspect.stdout}}"
+      - nodes
+    with_items: "{{nodes.split(',')}}"
+  - name: Determin IP of the Monasca nodes
+    command: "{{ansible_env['PWD']}}/docker_ip.sh {{job_name}}_{{item}}_{{build_number}}"
+    register: node_ips
+    with_items: "{{nodes.split(',')}}"
   - name: Write out Inventory for the Docker containers
-    template: src=docker_inventory.j2 dest="{{ansible_env['PWD']}}/single-node/hosts" 
+    template: src=docker_inventory.j2 dest="{{inventory_dir}}/hosts"
 
