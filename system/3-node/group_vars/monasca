@@ -1,7 +1,7 @@
 ---
 openstack: "{{keystone_host}}"
 cluster: "{{groups['monasca']}}"
-master_node: "{{hostvars[groups['monasca_master'][0]]['ansible_ssh_host']}}"
+master_node: "{{groups['monasca_master'][0]}}"
 
 database_type: influxdb
 
