@@ -16,6 +16,7 @@ import sys
 
 config = smoke2_configs.test_config
 args = 0
+success = True
 
 # successfully = '\033[5;40;32mSuccessfully\033[0m'
 # successful = '\033[5;40;32mSuccessful.\033[0m'
@@ -33,11 +34,11 @@ def parse_commandline_args():
     parser.add_argument('-k', '--kafka',
                         default=config['default']['arg_defaults']['kafka'],
                         help='will check kafka on listed node(s). '
-                             'ex. -k "192.168.10.4 192.168.10.7"')
+                             'ex. -k "192.168.10.4,192.168.10.7"')
     parser.add_argument('-z', '--zoo',
                         default=config['default']['arg_defaults']['zoo'],
                         help='will check zookeeper on listed node(s). '
-                             'ex. -z "192.168.10.4 192.168.10.7"')
+                             'ex. -z "192.168.10.4,192.168.10.7"')
     parser.add_argument('-m', '--mysql',
                         default=config['default']['arg_defaults']['mysql'],
                         help='will check mysql on listed node. '
@@ -58,6 +59,7 @@ def parse_commandline_args():
 
 
 def find_processes():
+    global success
     """Find_process is meant to validate that all the required processes
     are running"""
     process_missing = []
@@ -78,9 +80,9 @@ def find_processes():
     if len(process_missing) > 0:   # if processes were not found
         print (error + ' Process = {} Not Found'
                .format(process_missing))
-        return False
-    print(successful + ' All Processes are running.')
-    return True
+        success = False
+    else:
+        print(successful + ' All Processes are running.')
 
 
 def check_port(node, port):
@@ -92,18 +94,23 @@ def check_port(node, port):
             print(successful + " Port {} is open".format(port))
         return False
     else:
-        print(error + " Port {} is not open".format(port))
+        print(error + " Port {0} is not open on node {1}".format(port,node))
         return True
 
 
 def debug_kafka(node):
+    global success
     print('********VERIFYING KAFKA NODE(S)********')
-    node = node.split(' ')
+    node = node.split(',')
     topics = config['default']['kafka']['topics']
+    cluster_status = True
     for nodeip in node:
         if nodeip[-5:-4] == ':':
             nodeip = nodeip[:-5]
         fail = check_port(nodeip, 9092)
+        if fail:
+            cluster_status = False
+            continue
         if args.verbose:
             print('Checking topics on node {}:'.format(nodeip))
         kafka_client = kafka.client.KafkaClient(nodeip + ':9092')
@@ -121,22 +128,25 @@ def debug_kafka(node):
             except KeyError:
                 print('\t' + error + ' Could not connect '
                       'to topic {}'.format(topic))
-                fail = True
-    if fail:
-        return False
+                cluster_status = False
+    if not cluster_status:
+        success = False
     else:
-        if not args.verbose:
-            print(successful)
-    return True
+        print(successful)
 
 
 def debug_zookeeper(node):
+    global success
     print('*******VERIFYING ZOOKEEPER NODE(S)*******')
-    node = node.split(' ')
+    node = node.split(',')
+    cluster_status = True
     for nodeip in node:
         if nodeip[-5:-4] == ':':
             nodeip = nodeip[:-5]
         fail = check_port(nodeip, 2181)
+        if fail:
+            cluster_status = False
+            continue
         cmd = "nc " + nodeip + ' 2181'
         ps = subprocess.Popen(('echo', 'ruok'), stdout=subprocess.PIPE)
         try:
@@ -146,64 +156,69 @@ def debug_zookeeper(node):
                 if args.verbose:
                     print("cmd: echo ruok | " + cmd + " Response: {}"
                           .format(output) + " " + successful)
-                else:
-                    print(successful)
         except subprocess.CalledProcessError:
             print(error + ' Node {} is not responding'.format(nodeip))
-            return False
-    if fail:
-        return False
-    return True
+            cluster_status = False
+    if not cluster_status:
+        success = False
+    else:
+        print(successful)
 
 
 def debug_mysql(node, mysql_user, mysql_pass):
+    global success
     print('********VERIFYING MYSQL NODE********')
-    fail = check_port(node, 3306)
-    schema = config['default']['mysql_schema']
-    try:
-        conn = MySQLdb.connect(
-            host=node,
-            user=mysql_user,
-            passwd=mysql_pass,
-            db='mon')
-        if args.verbose:
-            print(successfully + ' connected to node {}'.format(node))
-        conn.query('show tables')
-        result = conn.store_result()
-        if args.verbose:
-            print('Checking MYSQL Table Schema on node {}:'.format(node))
-        for x in range(0, result.num_rows()):
-            row = result.fetch_row()[0][0]
-            if row in schema:
-                if args.verbose:
-                    print('\t' + successfully +
-                          ' matched table {}'.format(row))
-            else:
-                print('\t' + error + ' Table {} does not '
-                      'match config'.format(row))
-                fail = True
+    nodes = node.split(",")
+    cluster_status = True
+    for node in nodes:
+        fail = check_port(node, 3306)
         if fail:
-            print('\033[5;41;37m[ERROR]: MySQL test failed\033[0m')
-            return False
-        else:
-            if not args.verbose:
-                print(successful)
-        return True
-
-    except MySQLdb.OperationalError, e:
-        print(error + ' MySQL connection failed: {}'.format(e))
-        return False
+            cluster_status = False
+            continue
+        schema = config['default']['mysql_schema']
+        try:
+            conn = MySQLdb.connect(
+                host=node,
+                user=mysql_user,
+                passwd=mysql_pass,
+                db='mon')
+            if args.verbose:
+                print(successfully + ' connected to node {}'.format(node))
+            conn.query('show tables')
+            result = conn.store_result()
+            if args.verbose:
+                print('Checking MYSQL Table Schema on node {}:'.format(node))
+            for x in range(0, result.num_rows()):
+                row = result.fetch_row()[0][0]
+                if row in schema:
+                    if args.verbose:
+                        print('\t' + successfully +
+                              ' matched table {}'.format(row))
+                else:
+                    print('\t' + error + ' Table {} does not '
+                          'match config'.format(row))
+                    cluster_status = False
+        except MySQLdb.OperationalError, e:
+            print(error + ' MySQL connection failed: {0} on node {1}'.format(e, node))
+            cluster_status = False
+    if not cluster_status:
+        success = False
+    else:
+        print(successful)
 
 
 def debug_influx(node, influx_user, influx_pass):
+    global success
     print('********VERIFYING INFLUXDB NODE********')
     try:
         from influxdb import client
-    except ImportError, e:
+    except ImportError:
         print("[WARNING]: InfluxDB Python Package is not installed!")
         return 1
     fail = check_port(node, 8086)
-    fail = check_port(node, 8090)
+    fail |= check_port(node, 8090)
+    if fail:
+        success = False
     try:
         conn = client.InfluxDBClient(
             node,
@@ -219,31 +234,26 @@ def debug_influx(node, influx_user, influx_pass):
             print(successful)
     except Exception, e:
         print('{}'.format(e))
-        return False
-    if fail:
-        return False
-    return True
+        success = False
 
 
-def debug_vertica(node, vuser, vpass):
+def debug_vertica():
+    global success
     print('********VERIFYING VERTICA NODE********')
-    fail = check_port(node, 5433)
-    fail = check_port(node, 5434)
     try:
-        cmd = "/opt/vertica/bin/vsql -U " + vuser + " -w  " + vpass + "  " \
-              "-c \"select count(*) from MonMetrics.Measurements\""
+        cmd = "sudo su dbadmin -c '/opt/vertica/bin/admintools -t view_cluster'"
         output = subprocess.check_output(shlex.split(cmd))
         if args.verbose:
-            print("Running cmd: select count(*) from MonMetrics.Measurements")
-            output = [int(s) for s in output.split() if s.isdigit()]
-            print("Response: " + str(output[0]) + " " + successful)
+            print("Running cmd: admintools -t view_cluster -d mon as user dbadmin")
+            print("Response: " + output)
+        if "DOWN" in output:
+            print(error + " Part of the cluster is DOWN: \n{0}".format(output))
+            success = False
         else:
             print(successful)
     except subprocess.CalledProcessError:
         print(error + " Cannot connect to vertica")
-    if fail:
-        return False
-    return True
+        success = False
 
 
 def debug_keystone(key_user, key_pass, project, auth_url):
@@ -263,38 +273,45 @@ def debug_keystone(key_user, key_pass, project, auth_url):
 
 
 def debug_rest_urls(node, token):
+    global success
     print('********VERIFYING REST API********')
-    url = 'http://' + node + ":8080/"
-    fail = check_port(node, 8080)
-    try:
-        r = requests.get(url, headers={'X-Auth-Token': token})
-        if r.status_code == 200:
-            version_id = r.json()['elements'][0]['id']
-            if args.verbose:
-                print(successfully + ' connected to REST API on '
-                                     'node {}. Response (version id): {}'
-                      .format(node, version_id))
+    nodes = node.split(",")
+    cluster_status = True
+    for node in nodes:
+        url = 'http://' + node + ":8080/"
+        fail = check_port(node, 8080)
+        if fail:
+            cluster_status = False
+            continue
+        try:
+            r = requests.request("GET", url, headers={'X-Auth-Token': token})
+            if r.status_code == 200:
+                version_id = r.json()['elements'][0]['id']
+                if args.verbose:
+                    print(successfully + ' connected to REST API on '
+                                         'node {}. Response (version id): {}'
+                          .format(node, version_id))
             else:
-                print(successful)
-        else:
-            print(error + ' unexpected response received: \n'
-                          '{}'.format(r.text))
-            return False
-    except requests.ConnectionError:
-        print(error + ' incorrect response from REST '
-              'API on node {}'.format(node))
-        return False
-    if fail:
-        return False
+                print(error + ' unexpected response received: \n'
+                              '{}'.format(r.text))
+                cluster_status = False
+        except requests.ConnectionError as e:
+            print(error + ' connection error received from node {}'.format(node))
+            print("\t {}".format(e))
+            cluster_status = False
+        except Exception as e:
+            print(error + ' error received from node {}'.format(node))
+            print("\t {}".format(e))
+            cluster_status = False
+    if not cluster_status:
+        success = False
     else:
-        return True
+        print(successful)
 
 
 def debug_storm(node):
+    global success
     print('********VERIFYING STORM********')
-    fail = check_port(node, 6701)
-    fail = check_port(node, 6702)
-    fail = check_port(node, 6627)
     cmd = "/opt/storm/apache*"
     cmd = glob.glob(cmd)[0] + "/bin/storm list"
     grep = "grep 'ACTIVE'"
@@ -310,22 +327,18 @@ def debug_storm(node):
                 print(successful)
     except Exception, e:
         print(error + " {}".format(e))
-        return False
-    if fail:
-        return False
-    else:
-        return True
+        success = False
 
 
 def stage_one(single=None, zoo=None, kafka=None):
-
+    global success
     if single:
         debug_zookeeper(single)
     elif zoo:
         debug_zookeeper(zoo)
     else:
         print(error + ' Could not parse zookeeper node!')
-        return 1
+        success = False
 
     if single:
         debug_kafka(single)
@@ -333,11 +346,11 @@ def stage_one(single=None, zoo=None, kafka=None):
         debug_kafka(kafka)
     else:
         print(error + ' Could not parse kafka node!')
-        return 1
-    return 0
+        success = False
 
 
 def stage_two(single=None, mysql=None, dbtype=None, db=None):
+    global success
     mysql_user = config['mysql']['user']
     mysql_pass = config['mysql']['pass']
     if mysql_user and mysql_pass:
@@ -347,25 +360,13 @@ def stage_two(single=None, mysql=None, dbtype=None, db=None):
             debug_mysql(mysql, mysql_user, mysql_pass)
         else:
             print(error + ' Could not parse node for mysql')
-            return 1
+            success = False
     else:
         print(error + ' Could not parse mysql user/pass')
-        return 1
+        success = False
 
     if dbtype == 'vertica':
-        vertica_user = config['vertica']['user']
-        vertica_pass = config['vertica']['pass']
-        vertica_node = config['vertica']['node']
-        if vertica_user and vertica_pass:
-            if single:
-                debug_vertica(single, vertica_user, vertica_pass)
-            elif db:
-                debug_vertica(db, vertica_user, vertica_pass)
-            else:
-                debug_vertica(vertica_node, vertica_user, vertica_pass)
-        else:
-            print(error + ' Cloud not parse vertica user/pass')
-            return 1
+        debug_vertica()
     else:
         influx_user = config['influx']['user']
         influx_pass = config['influx']['pass']
@@ -383,10 +384,11 @@ def stage_two(single=None, mysql=None, dbtype=None, db=None):
                     debug_influx(influx_node, influx_user, influx_pass)
             else:
                 print(error + " Could not parse influxdb node")
-                return 1
+                success = False
 
 
 def stage_three(single=None, monapi=None):
+    global success
     print('*****VERIFYING KEYSTONE*****')
     key_user = config['keystone']['user']
     key_pass = config['keystone']['pass']
@@ -398,14 +400,13 @@ def stage_three(single=None, monapi=None):
                 token = debug_keystone(key_user, key_pass, 'test', auth_url)
             except Exception, e:
                 print(error + ' {}'.format(e))
-                print('*****TEST FAILED*****')
-                return 1
+                success = False
         else:
             print(error + ' Could not parse keystone user/pass')
-            return 1
+            success = False
     else:
         print(error + ' Could not parse keystone node')
-        return 1
+        success = False
 
     if single:
         debug_rest_urls(single, token)
@@ -413,42 +414,41 @@ def stage_three(single=None, monapi=None):
         debug_rest_urls(monapi, token)
     else:
         print(error + ' Could not parse node for REST API')
+        success = False
 
     storm_node = config['storm']
     if storm_node:
         debug_storm(storm_node)
     else:
         print(error + ' Could not parse storm node')
+        success = False
 
 
 def main():
     # parse the command line arguments
     global args
     args = parse_commandline_args()
-    fail = 0
 
     # Stage One
     # Will check Zookeeper and Kafka
-    fail = stage_one(args.single, args.zoo, args.kafka)
+    stage_one(args.single, args.zoo, args.kafka)
 
     print('*****VERIFYING HOST SERVICES/PROCESSES*****')
-    if not find_processes():
-        print('*****TEST FAILED*****')
-        return 1
+    find_processes()
 
     # Stage Two
     # Will check MySQL and vertica/influxdb
-    fail = stage_two(args.single, args.mysql, args.dbtype, args.db)
+    stage_two(args.single, args.mysql, args.dbtype, args.db)
 
     # Stage Three
     # Will check keystone, REST API, and Storm
-    fail = stage_three(args.single, args.monapi)
+    stage_three(args.single, args.monapi)
 
-    if fail:
-        print('*****TEST FAILED*****')
+    if not success:
+        print('*****TESTS FAILED*****')
         return 1
 
-    print('*****TEST FINISHED*****')
+    print('*****TESTS SUCCEEDED*****')
     return 0
 
 if __name__ == "__main__":
