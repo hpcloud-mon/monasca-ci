@@ -49,7 +49,7 @@ test_config = {
 
         'notification': {
             'name': 'Smoke Test Webhook',
-            'addr': 'http://127.0.0.1:8080',
+            'addr': 'http://127.0.0.1:8782',
             'type': 'WEBHOOK'},
 
         'alarm': {
