@@ -278,8 +278,8 @@ def debug_rest_urls(node, token):
     nodes = node.split(",")
     cluster_status = True
     for node in nodes:
-        url = 'http://' + node + ":8080/"
-        fail = check_port(node, 8080)
+        url = 'http://' + node + ":8070/"
+        fail = check_port(node, 8070)
         if fail:
             cluster_status = False
             continue
