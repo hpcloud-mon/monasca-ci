@@ -167,8 +167,8 @@ def smoke_test():
     cleanup(notification_name, alarm_definition_name)
 
     # Query how many metrics there are for the Alarm
-    hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
-    hour_ago_str = hour_ago.strftime('%Y-%m-%dT%H:%M:%S')
+    hour_ago = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
+    hour_ago_str = hour_ago.strftime('%Y-%m-%dT%H:%M:%S') + 'Z'
     print('Getting metrics for {}{} '.format(metric_name, metric_dimensions))
     initial_num_metrics = count_metrics(metric_name, metric_dimensions,
                                         hour_ago_str)
