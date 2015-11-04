@@ -216,7 +216,9 @@ def debug_influx(node, influx_user, influx_pass):
         print("[WARNING]: InfluxDB Python Package is not installed!")
         return 1
     fail = check_port(node, 8086)
-    fail |= check_port(node, 8090)
+    # Port 8090 is specific to the java persister. Do not check
+    # port 8090 in order to allow the python persister to pass
+    # fail |= check_port(node, 8090)
     if fail:
         success = False
     try:
