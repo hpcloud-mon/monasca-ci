@@ -56,6 +56,14 @@ test_config = {
         'node': "{{influxdb_url|default()}}"
     },
 {% endif %}
+{% if mon_cassandra_users is defined %}
+    'cassandra': {
+        'user': "{{mon_cassandra_users[0]['username']|default()}}",
+        'pass': "{{mon_cassandra_users[0]['password']|default()}}",
+        'contact_points': "{{cassandra_host|default()}}"
+        'keyspace': "{{cassandra_keyspace|default()}}"
+    },
+{% endif %}
     'help': {
         'test': 'wiki link for help with specific process'
     }
