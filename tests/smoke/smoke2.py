@@ -280,7 +280,7 @@ def debug_cassandra(contact_points_str, keyspace, port=9042):
 
             if args.verbose:
                 print(successfully + ' connected to cassandra at {}'.
-                      format(contact_points_str))
+                      format(contact_points))
             else:
                 print(successful)
 
