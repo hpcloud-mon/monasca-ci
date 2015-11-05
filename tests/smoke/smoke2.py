@@ -30,7 +30,7 @@ def parse_commandline_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-dbtype', '--dbtype',
                         default=config['default']['arg_defaults']['dbtype'],
-                        help='specify which database (influxdb or vertica)')
+                        help='specify which database (influxdb, vertica or cassandra)')
     parser.add_argument('-k', '--kafka',
                         default=config['default']['arg_defaults']['kafka'],
                         help='will check kafka on listed node(s). '
@@ -216,7 +216,9 @@ def debug_influx(node, influx_user, influx_pass):
         print("[WARNING]: InfluxDB Python Package is not installed!")
         return 1
     fail = check_port(node, 8086)
-    fail |= check_port(node, 8090)
+    # Port 8090 is specific to the java persister. Do not check
+    # port 8090 in order to allow the python persister to pass
+    # fail |= check_port(node, 8090)
     if fail:
         success = False
     try:
@@ -254,6 +256,37 @@ def debug_vertica():
     except subprocess.CalledProcessError:
         print(error + " Cannot connect to vertica")
         success = False
+
+
+def debug_cassandra(contact_points_str, keyspace, port=9042):
+    global success
+    print('********VERIFYING CASSANDRA NODE********')
+    try:
+        from cassandra.cluster import Cluster
+    except ImportError:
+        print("[WARNING]: Cassandra Python Package is not installed!")
+        return 1
+
+    contact_points = [x.strip() for x in contact_points_str.split(',')]
+    if check_port(contact_points[0], port):
+        success = False
+
+    else:
+        try:
+            cluster = Cluster(contact_points=contact_points,
+                              port=port, protocol_version=3)
+            session = cluster.connect(keyspace)
+            session.shutdown()
+
+            if args.verbose:
+                print(successfully + ' connected to cassandra at {}'.
+                      format(contact_points))
+            else:
+                print(successful)
+
+        except Exception as ex:
+            print('ERROR: {}'.format(str(ex)))
+            success = False
 
 
 def debug_keystone(key_user, key_pass, project, auth_url):
@@ -367,6 +400,10 @@ def stage_two(single=None, mysql=None, dbtype=None, db=None):
 
     if dbtype == 'vertica':
         debug_vertica()
+    elif dbtype == 'cassandra':
+        contact_points_str = config['cassandra']['contact_points']
+        keyspace = config['cassandra']['keyspace']
+        debug_cassandra(contact_points_str, keyspace)
     else:
         influx_user = config['influx']['user']
         influx_pass = config['influx']['pass']
@@ -437,7 +474,7 @@ def main():
     find_processes()
 
     # Stage Two
-    # Will check MySQL and vertica/influxdb
+    # Will check MySQL and vertica/influxdb/cassandra
     stage_two(args.single, args.mysql, args.dbtype, args.db)
 
     # Stage Three
