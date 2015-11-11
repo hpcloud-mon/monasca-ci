@@ -216,7 +216,7 @@ def debug_influx(node, influx_user, influx_pass):
         print("[WARNING]: InfluxDB Python Package is not installed!")
         return 1
     fail = check_port(node, 8086)
-    fail |= check_port(node, 8090)
+    fail |= check_port(node, 8083)
     if fail:
         success = False
     try:
