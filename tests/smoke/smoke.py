@@ -241,20 +241,17 @@ def smoke_test():
         msg = 'Unable to change Alarm state'
         return False, msg
 
-    # There is a bug in the API which allows this to work. Soon that
-    # will be fixed and this will fail
-    if len(sys.argv) > 1:
-        final_state = 'ALARM'
-        states.append(final_state)
+    final_state = 'ALARM'
+    states.append(final_state)
 
-        state = wait_for_alarm_state_change(alarm_id, new_state)
-        if state is None:
-            msg = 'Alarm is in an unknown state'
-            return False, msg
+    state = wait_for_alarm_state_change(alarm_id, new_state)
+    if state is None:
+        msg = 'Alarm is in an unknown state'
+        return False, msg
 
-        if state != final_state:
-            msg = ('Wrong final state, expected {} but was {}'.format(final_state, state))
-            return False, msg
+    if state != final_state:
+        msg = ('Wrong final state, expected {} but was {}'.format(final_state, state))
+        return False, msg
 
     # If the alarm changes state too fast, then there isn't time for the new
     # metric to arrive. Unlikely, but it has been seen
