@@ -26,7 +26,7 @@ test_config = {
             'dbtype': "{{database_type|default('influxdb')}}",
             'kafka': "{{kafka_hosts|default()}}",
             'zoo': "{{zookeeper_hosts|default()}}",
-            'mysql': "{{mysql_host|default()}}",
+            'mysql': "{{database_host|default()}}",
             'monapi': "{{host_ip|default()}}",
 
         },
